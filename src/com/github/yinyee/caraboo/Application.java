@@ -7,13 +7,14 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 
 public class Application extends ResourceConfig {
+	
 	private static AmazonDynamoDBClient sDbClient;
 	private static AmazonSimpleEmailServiceClient sSESClient;
 	
 	public synchronized static AmazonDynamoDBClient getDbClient() {
 		if (sDbClient == null) {
 			AmazonDynamoDBClient dbClient = new AmazonDynamoDBClient();
-			dbClient.withRegion(Regions.US_EAST_1);
+			dbClient.withRegion(Regions.EU_WEST_1);
 			sDbClient = dbClient;
 		}
 		return sDbClient;

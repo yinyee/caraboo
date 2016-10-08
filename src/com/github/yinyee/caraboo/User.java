@@ -8,9 +8,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
@@ -32,16 +30,10 @@ public class User {
 	public ArrayList<Question> questions;
 	public ArrayList<JournalEntry> journal;
 	
-	public User() {
-		
-		this.username = "Me";
-		
+	public User(String username) {
+		this.username = username;
 		this.questions = new ArrayList<Question>();
-		questions.add(new Question());
-		
 		this.journal = new ArrayList<JournalEntry>();
-		journal.add(new JournalEntry());
-		
 	}
 	
 	/**
@@ -50,39 +42,37 @@ public class User {
 	 * @return
 	 */
 	@GET
-	@Path("/users/{id}")
+	@Path("/users/{userid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public User getItem(@PathParam("id") String userId) {
+	public User getItem(@PathParam("userid") String userId) {
+		
 		Map<String, AttributeValue> key = new HashMap<String,AttributeValue>();
-		key.put("id", new AttributeValue(userId));
+		key.put("uid", new AttributeValue(userId));
+		
 		Map<String, AttributeValue> value = Application.getDbClient().getItem(new GetItemRequest().withTableName("caraboo-users").withKey(key)).getItem();
-		// TODO use value
+		this.username = value.get("username").getS();
+		
 		return this;
 	}
-	
-	// Saves a new answer
-	@POST
-	@Path("/users/{userid}/questions/{qid}")
-	@Consumes("application/json")
-	public void newAnswer(@PathParam("userid") String itemid, @PathParam("qid") int qid, Question question) {
-		questions.add(question);
-	}
-	
-	// Saves a new journal entry
-	@POST
-	@Path("/users/{userid}/journal")
-	@Consumes("application/json")
-	public void newJournalEntry(@PathParam("userid") String itemid, JournalEntry entry) {
-		journal.add(entry);
-	}
 
-	@PUT
-	@Path("/users/{id}")
+	/**
+	 * Posts a new user entry into the caraboo-users table
+	 * @param userId
+	 * @param user
+	 * @return
+	 */
+	@POST
+	@Path("/users/{userid}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response putItem(@PathParam("id") String userId, User user) {
+	public Response putItem(@PathParam("userid") String userId, User user) {
+		
 		Map<String, AttributeValue> item = new HashMap<String,AttributeValue>();
-		item.put("id", new AttributeValue(userId));
+		
+		item.put("uid", new AttributeValue(userId));
+		item.put("username", new AttributeValue(user.username));
+		
 		Application.getDbClient().putItem(new PutItemRequest().withTableName("caraboo-users").withItem(item));
+		
 		return Response.noContent().build();
 	}
 	
