@@ -6,6 +6,8 @@ public class Application extends ResourceConfig {
 	public Application() {
 		packages(getClass().getCanonicalName());
         register(User.class);
+        register(Question.class);
+        register(JournalEntry.class);
 	}
 
 }
