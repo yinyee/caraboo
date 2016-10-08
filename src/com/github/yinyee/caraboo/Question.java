@@ -20,6 +20,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
+import com.amazonaws.services.dynamodbv2.model.QueryRequest;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -29,6 +30,10 @@ public class Question {
 	public int answer;
 	public long lastAnswered;
 	
+	public Question() {
+		this.lastAnswered = System.currentTimeMillis();
+	}
+
 	public Question(int qid, int answer) {
 		this.qid = qid;
 		this.answer = answer;
@@ -74,41 +79,24 @@ public class Question {
 	@Produces(MediaType.APPLICATION_JSON)
     public List<Question> getItem(@PathParam("userid") String userid) {
 		
-//		ArrayList<Question> questions = new ArrayList<Question>();
-		
 		Map<String, AttributeValue> key = new HashMap<String,AttributeValue>();
-		key.put("uid", new AttributeValue(userid));
+		key.put(":uid", new AttributeValue(userid));
 		
-		// Create the Mapper and send a request
-		DynamoDBMapper mapper = new DynamoDBMapper(Application.getDbClient());
-		
-		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-        eav.put(":val1", new AttributeValue().withS(userid));
-		
-        DynamoDBQueryExpression<Question> queryExpression = new DynamoDBQueryExpression<Question>()
-                .withKeyConditionExpression("uid = :val1")
-                .withExpressionAttributeValues(eav);
-        
-        List<Question> questions = mapper.query(Question.class, queryExpression);
-        
-		// Loop over all results
-//		Map<String, AttributeValue> value;
-//		int qid, answer;
-//		long timestamp;
-//		
-//		for (Question q : latestQuestions) {
-//			
-//		}
-//		
-//		
-//		
-//		
-//		qid = Integer.parseInt(value.get("qid").getN());
-//		answer = Integer.parseInt(value.get("answer").getN());
-//		timestamp = Integer.parseInt(value.get("timestamp").getN());
-//		
-//		q = new Question(qid, answer, timestamp); 
-//		questions.add(q);
+		QueryRequest qr = new QueryRequest()
+		.withTableName("caraboo-questions")
+		.withKeyConditionExpression("uid = :uid")
+		.withExpressionAttributeValues(key);
+
+		List<Map<String, AttributeValue>> items = Application.getDbClient().query(qr).getItems();
+
+		List<Question> questions = new ArrayList<Question>();
+		for (Map<String, AttributeValue> item : items) {
+			Question question = new Question();
+			question.lastAnswered = Long.parseLong(item.get("timestamp").getN());
+			question.answer = Integer.parseInt(item.get("answer").getN());
+			question.qid = Integer.parseInt(item.get("qid").getN());
+			questions.add(question);
+		}
 		
         return questions;
     }
