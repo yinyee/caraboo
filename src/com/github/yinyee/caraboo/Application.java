@@ -4,9 +4,11 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 
 public class Application extends ResourceConfig {
 	private static AmazonDynamoDBClient sDbClient;
+	private static AmazonSimpleEmailServiceClient sSESClient;
 	
 	public synchronized static AmazonDynamoDBClient getDbClient() {
 		if (sDbClient == null) {
@@ -15,6 +17,15 @@ public class Application extends ResourceConfig {
 			sDbClient = dbClient;
 		}
 		return sDbClient;
+	}
+	
+	public synchronized static AmazonSimpleEmailServiceClient getSESClient() {
+		if (sSESClient == null) {
+			AmazonSimpleEmailServiceClient sesClient = new AmazonSimpleEmailServiceClient();
+			sesClient.withRegion(Regions.US_EAST_1);
+			sSESClient = sesClient;
+		}
+		return sSESClient;
 	}
 	
 	public Application() {
