@@ -33,12 +33,13 @@ public class JournalEntry {
 	public long timestamp;
 	public String entry;
 	public int rating;
-	public double sentiment = Double.NaN;
+	public double sentiment;
 	
 	public JournalEntry() {
 		this.timestamp = 1475953227226l;
 		this.entry = "Smashed it today";
 		this.rating = 5;
+		this.sentiment = 0d;
 	}
 	
 	/**
@@ -59,6 +60,7 @@ public class JournalEntry {
 		this.timestamp = Long.parseLong(timestamp);
 		this.entry = value.get("entry").getS();
 		this.rating = Integer.parseInt(value.get("rating").getS());
+		this.sentiment = Double.parseDouble(value.get("sentiment").getN());
 		
         return this;
     }
@@ -90,6 +92,7 @@ public class JournalEntry {
 			entry.timestamp = Long.parseLong(item.get("timestamp").getN());
 			entry.entry = item.get("entry").getS();
 			entry.rating = Integer.parseInt(item.get("rating").getS());
+			entry.sentiment = Double.parseDouble(item.get("sentiment").getN());
 			journalEntries.add(entry);
 		}
 		
