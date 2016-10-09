@@ -13,10 +13,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
@@ -104,7 +100,7 @@ public class Question {
 	@POST
 	@Path("/users/{userid}/questions")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response putItem(@PathParam("userid") String userid, Question question) {
+	public String putItem(@PathParam("userid") String userid, Question question) {
 		
 		Map<String, AttributeValue> key = new HashMap<String,AttributeValue>();
 		
@@ -115,7 +111,7 @@ public class Question {
 		
 		Application.getDbClient().putItem(new PutItemRequest().withTableName("caraboo-questions").withItem(key));
 		
-		return Response.noContent().build();
+		return String.valueOf(question.lastAnswered);
 	}
 	
 }

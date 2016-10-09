@@ -1,6 +1,8 @@
 package com.github.yinyee.caraboo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.Consumes;
@@ -9,12 +11,19 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
 import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
+import com.amazonaws.services.dynamodbv2.model.QueryRequest;
+import com.amazonaws.services.simpleemail.model.Body;
+import com.amazonaws.services.simpleemail.model.Content;
+import com.amazonaws.services.simpleemail.model.Destination;
+import com.amazonaws.services.simpleemail.model.Message;
+import com.amazonaws.services.simpleemail.model.SendEmailRequest;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,6 +61,38 @@ public class JournalEntry {
         return this;
     }
 	
+	/**
+	 * Returns all the journal entries available for the specified user id
+	 * @param userid
+	 * @return
+	 */
+	@GET
+	@Path("/users/{userid}/journal")
+	@Produces(MediaType.APPLICATION_JSON)
+    public List<JournalEntry> getItems(@PathParam("userid") String userid) {
+		
+		Map<String, AttributeValue> key = new HashMap<String,AttributeValue>();
+		key.put(":uid", new AttributeValue(userid));
+		
+		QueryRequest qr = new QueryRequest()
+		.withTableName("caraboo-journalentries")
+		.withKeyConditionExpression("uid = :uid")
+		.withExpressionAttributeValues(key);
+
+		List<Map<String, AttributeValue>> items = Application.getDbClient().query(qr).getItems();
+
+		List<JournalEntry> journalEntries = new ArrayList<JournalEntry>();
+		for (Map<String, AttributeValue> item : items) {
+			JournalEntry entry = new JournalEntry();
+			entry.timestamp = Long.parseLong(item.get("timestamp").getN());
+			entry.entry = item.get("entry").getS();
+			entry.rating = Integer.parseInt(item.get("rating").getS());
+			journalEntries.add(entry);
+		}
+		
+        return journalEntries;
+    }
+	
 	@POST
 	@Path("/users/{userid}/journal")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -66,6 +107,39 @@ public class JournalEntry {
 		
 		Application.getDbClient().putItem(new PutItemRequest().withTableName("caraboo-journalentries").withItem(key));
 		
+		return Response.noContent().build();
+	}
+	
+	@POST
+	@Path("/users/{userid}/journal/{timestamp}/notify")
+	public Response getItem(@PathParam("userid") String user, @PathParam("timestamp") String timestamp, @QueryParam("destination") String destination) {
+		if (!destination.isEmpty()) {
+			
+			// String journalEntry = "I was asked to speak at a panel as an expert.";
+			String journalEntry = getItem(user, timestamp).entry;
+			
+			String html = "<html>" +
+					"<head>" +
+					"<title>" + 
+					"Kudos time!" +
+					"</title>" + 
+					"</head>" +
+					"<body>" +
+					"<h1>Kudos time!</h1>" +
+					"<p>Anna has achieved something big today!</p>" +
+					"<ul><li>" + journalEntry + "</li></ul>" +
+					"<p>Help Anna celebrate her win! Do something for her today that will put an extra smile on her face!</p>" +
+					"<p><button>I accept!</button>&nbsp;<button>Another time...</button></p>" +
+					"</body>" +
+					"</html>";
+
+			SendEmailRequest ser = new SendEmailRequest()
+			.withSource("notification@caraboo.uk.to")
+			.withDestination(new Destination().withToAddresses(destination))
+			.withMessage(new Message().withSubject(new Content().withData("Kudos time!")).withBody(new Body().withHtml(new Content(html))));
+
+			Application.getSESClient().sendEmail(ser);
+		}
 		return Response.noContent().build();
 	}
 

@@ -23,7 +23,7 @@ public class Application extends ResourceConfig {
 	public synchronized static AmazonSimpleEmailServiceClient getSESClient() {
 		if (sSESClient == null) {
 			AmazonSimpleEmailServiceClient sesClient = new AmazonSimpleEmailServiceClient();
-			sesClient.withRegion(Regions.US_EAST_1);
+			sesClient.withRegion(Regions.EU_WEST_1);
 			sSESClient = sesClient;
 		}
 		return sSESClient;
