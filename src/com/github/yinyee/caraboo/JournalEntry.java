@@ -1,5 +1,6 @@
 package com.github.yinyee.caraboo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ public class JournalEntry {
 	public long timestamp;
 	public String entry;
 	public int rating;
+	public double sentiment = Double.NaN;
 	
 	public JournalEntry() {
 		this.timestamp = 1475953227226l;
@@ -96,26 +98,35 @@ public class JournalEntry {
 	@POST
 	@Path("/users/{userid}/journal")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response putItem(@PathParam("userid") String userid, JournalEntry entry) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public JournalEntry putItem(@PathParam("userid") String userid, JournalEntry entry) {
+
+		double sentiment = Double.NaN;
+		try {
+			sentiment = Application.getSentimentAnalyzer().analyze(entry.entry);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		Map<String, AttributeValue> key = new HashMap<String,AttributeValue>();
+		entry.sentiment = sentiment;
 		
 		key.put("uid", new AttributeValue(userid));
 		key.put("timestamp", new AttributeValue().withN(String.valueOf(entry.timestamp)));
 		key.put("entry", new AttributeValue(entry.entry));
 		key.put("rating", new AttributeValue(String.valueOf(entry.rating)));
+		key.put("sentiment", new AttributeValue().withN(String.valueOf(sentiment)));
 		
 		Application.getDbClient().putItem(new PutItemRequest().withTableName("caraboo-journalentries").withItem(key));
 		
-		return Response.noContent().build();
+		return entry;
 	}
 	
 	@POST
 	@Path("/users/{userid}/journal/{timestamp}/notify")
 	public Response getItem(@PathParam("userid") String user, @PathParam("timestamp") String timestamp, @QueryParam("destination") String destination) {
 		if (!destination.isEmpty()) {
-			
-			// String journalEntry = "I was asked to speak at a panel as an expert.";
 			String journalEntry = getItem(user, timestamp).entry;
 			
 			String html = "<html>" +

@@ -6,10 +6,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 
-public class Application extends ResourceConfig {
-	
+public class Application extends ResourceConfig {	
 	private static AmazonDynamoDBClient sDbClient;
 	private static AmazonSimpleEmailServiceClient sSESClient;
+	private static SentimentAnalyzer sSentimentAnalyzer;
 	
 	public synchronized static AmazonDynamoDBClient getDbClient() {
 		if (sDbClient == null) {
@@ -29,6 +29,13 @@ public class Application extends ResourceConfig {
 		return sSESClient;
 	}
 	
+	public synchronized static SentimentAnalyzer getSentimentAnalyzer() {
+		if (sSentimentAnalyzer == null) {
+			sSentimentAnalyzer = new SentimentAnalyzer();
+		}
+		return sSentimentAnalyzer;
+	}
+
 	public Application() {
 		packages(getClass().getCanonicalName());
         	register(User.class);
