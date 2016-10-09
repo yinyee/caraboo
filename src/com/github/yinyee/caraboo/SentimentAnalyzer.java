@@ -45,7 +45,7 @@ public class SentimentAnalyzer {
 	    if (actualObj.get("sentiment_analysis") != null) {
 			return actualObj.get("sentiment_analysis").get(0).get("aggregate").get("score").asDouble();	    	
 	    } else {
-	    	return Double.NaN;
+	    	return 0d;
 	    }
 	}
 }

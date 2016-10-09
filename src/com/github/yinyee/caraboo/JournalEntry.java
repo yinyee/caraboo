@@ -102,7 +102,7 @@ public class JournalEntry {
 	@Produces(MediaType.APPLICATION_JSON)
 	public JournalEntry putItem(@PathParam("userid") String userid, JournalEntry entry) {
 
-		double sentiment = Double.NaN;
+		double sentiment = 0d;
 		try {
 			sentiment = Application.getSentimentAnalyzer().analyze(entry.entry);
 		} catch (IOException e) {
