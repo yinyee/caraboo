@@ -21,13 +21,13 @@ import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 public class User {
 	
 	public String username;
-	public ArrayList<Question> questions;
-	public ArrayList<JournalEntry> journal;
+	
+	public User() {
+		
+	}
 	
 	public User(String username) {
 		this.username = username;
-		this.questions = new ArrayList<Question>();
-		this.journal = new ArrayList<JournalEntry>();
 	}
 	
 	/**
