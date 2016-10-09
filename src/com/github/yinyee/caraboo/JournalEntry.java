@@ -84,6 +84,7 @@ public class JournalEntry {
 		List<Map<String, AttributeValue>> items = Application.getDbClient().query(qr).getItems();
 
 		List<JournalEntry> journalEntries = new ArrayList<JournalEntry>();
+		
 		for (Map<String, AttributeValue> item : items) {
 			JournalEntry entry = new JournalEntry();
 			entry.timestamp = Long.parseLong(item.get("timestamp").getN());

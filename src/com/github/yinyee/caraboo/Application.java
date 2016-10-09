@@ -41,6 +41,7 @@ public class Application extends ResourceConfig {
         	register(User.class);
         	register(Question.class);
         	register(JournalEntry.class);
+        	register(MeetUp.class);
 	}
 
 }
