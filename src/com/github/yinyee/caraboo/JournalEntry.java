@@ -36,8 +36,8 @@ public class JournalEntry {
 	public double sentiment;
 	
 	public JournalEntry() {
-		this.timestamp = 1475953227226l;
-		this.entry = "Smashed it today";
+		this.timestamp = System.currentTimeMillis();
+		this.entry = "";
 		this.rating = 5;
 		this.sentiment = 0d;
 	}
